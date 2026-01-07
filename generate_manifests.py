@@ -5,15 +5,28 @@ import datetime
 import argparse
 
 # --- Configuration ---
-TARGET_EMAILS_LIST = ["anoop.pxw+docpipe@gmail.com", "user1@example.com", "admin@test.com"]
+TARGET_EMAILS_LIST = [
+    "william+lyz.dev.client@paragonfaction.com",
+    "mallory+lyzclient@portfolioxpressway.com",
+    "max+lysclient@portfolioxpressway.com",
+    "eman+nov142@portfolioxpressway.com",
+    "tori+dec23pydio@thexchangecompany.com",
+]
 
-DOC_TYPES_LIST = ["Sub Docs Outstanding", "Invoice", "Contract", "Report"]
+DOC_TYPES_LIST = [
+    "Sub Docs Outstanding",
+    "Tax Slip - Individual",
+    "Tax Slip - Bulk",
+    "Report Request",
+    "Sub Docs Pending Cancel",
+    "Sub Docs Cancel",
+]
 
-TARGET_DIRS_LIST = ["HV56/Sub Docs", "QEV/Sub Docs", "SJE/Sub Docs", "General/Files"]
+TARGET_DIRS_LIST = ["/Tax_2025", "/Tax year minus one", "/Tax this year is 2025"]
 
 DOC_CATEGORIES_LIST = ["Financial", "Legal", "Operational", "HR"]
 
-START_DATE = "2025-01-01"
+START_DATE = "2025-10-01"
 END_DATE = "2025-12-31"
 
 # --- Helper Functions ---
