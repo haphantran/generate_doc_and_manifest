@@ -6,26 +6,38 @@ import argparse
 
 # --- Configuration ---
 TARGET_EMAILS_LIST = [
-    "william+lyz.dev.client@paragonfaction.com",
-    "mallory+lyzclient@portfolioxpressway.com",
-    "max+lysclient@portfolioxpressway.com",
-    "eman+nov142@portfolioxpressway.com",
-    "tori+dec23pydio@thexchangecompany.com",
+    "angelo@portfolioxpressway.com",
+    "haphan+client@portfolioxpressway.com",
+    "tori+jan19englishdefault@thexchangecompany.com",
+    "tori+jan19a@thexchangecompany.com",
+    "tori+jan19@thexchangecompany.com",
+    "tori+jan2b@thexchangecompany.com",
 ]
 
 DOC_TYPES_LIST = [
-    "Sub Docs Outstanding",
-    "Tax Slip - Individual",
-    "Tax Slip - Bulk",
-    "Report Request",
-    "Sub Docs Pending Cancel",
-    "Sub Docs Cancel",
+    "T3",
+    "T5008",
+    "R16",
+    "R18",
+    "NR4",
+    "Subscription Agreement",
+    "Report",
+    "Other Document",
 ]
 
-TARGET_DIRS_LIST = ["/Tax_2025", "/Tax year minus one", "/Tax this year is 2025"]
+TARGET_DIRS_LIST = ["/Tax 2025"]
 
-DOC_CATEGORIES_LIST = ["Financial", "Legal", "Operational", "HR"]
-
+DOC_CATEGORIES_LIST = [
+    "LYZ Individual Tax Slip",
+    "CFM Individual Tax Slip",
+    "LYS Individual Tax Slip",
+    "Sub Docs Outstanding",
+    "Sub Docs Pending Cancel",
+    "Sub Docs Cancel",
+    "Sub Docs Weekly Status",
+    "Report Request",
+    "Other Document",
+]
 START_DATE = "2025-10-01"
 END_DATE = "2025-12-31"
 
@@ -61,9 +73,27 @@ def get_random_working_day(working_days):
     return random.choice(working_days).strftime("%Y-%m-%d")
 
 
-def generate_manifests(input_dir, output_dir, files_per_manifest):
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+def generate_manifests(input_dir, output_dir, files_per_manifest, multi_target=False, max_targets=None):
+    """
+    Generate manifest files for documents.
+
+    Args:
+        input_dir: Directory containing the document files
+        output_dir: Base directory to save the manifest files
+        files_per_manifest: Number of files per manifest
+        multi_target: If True, assign multiple random emails to each document
+        max_targets: Maximum number of target emails per document (only used if multi_target=True)
+    """
+    # Determine actual output directory and naming based on mode
+    if multi_target:
+        actual_output_dir = os.path.join(output_dir, "multi_target")
+        manifest_prefix = "manifest_multi_target"
+    else:
+        actual_output_dir = output_dir
+        manifest_prefix = "manifest"
+
+    if not os.path.exists(actual_output_dir):
+        os.makedirs(actual_output_dir)
 
     # Get all files from input directory
     all_files = [
@@ -81,8 +111,8 @@ def generate_manifests(input_dir, output_dir, files_per_manifest):
     total_manifests = 0
     for i in range(0, len(all_files), files_per_manifest):
         chunk = all_files[i : i + files_per_manifest]
-        manifest_filename = f"manifest_{total_manifests + 1}.manifest"
-        manifest_path = os.path.join(output_dir, manifest_filename)
+        manifest_filename = f"{manifest_prefix}_{total_manifests + 1}.manifest"
+        manifest_path = os.path.join(actual_output_dir, manifest_filename)
 
         with open(manifest_path, "w") as mf:
             mf.write(f"DOCUMENT_COUNT={len(chunk)}\n")
@@ -92,7 +122,16 @@ def generate_manifests(input_dir, output_dir, files_per_manifest):
 
                 # Generate metadata
                 doc_no = idx + 1
-                target_email = random.choice(TARGET_EMAILS_LIST)
+
+                # Handle single vs multi-target emails
+                if multi_target and max_targets:
+                    # Select random number of emails between 1 and max_targets
+                    actual_num_targets = random.randint(1, min(max_targets, len(TARGET_EMAILS_LIST)))
+                    selected_emails = random.sample(TARGET_EMAILS_LIST, actual_num_targets)
+                    target_email = ",".join(selected_emails)
+                else:
+                    target_email = random.choice(TARGET_EMAILS_LIST)
+
                 doc_type = random.choice(DOC_TYPES_LIST)
                 target_dir = random.choice(TARGET_DIRS_LIST)
                 doc_category = random.choice(DOC_CATEGORIES_LIST)
@@ -113,7 +152,7 @@ def generate_manifests(input_dir, output_dir, files_per_manifest):
         total_manifests += 1
         print(f"Generated {manifest_filename} with {len(chunk)} documents.")
 
-    print(f"Finished. Generated {total_manifests} manifest files in '{output_dir}'.")
+    print(f"Finished. Generated {total_manifests} manifest files in '{actual_output_dir}'.")
 
 
 if __name__ == "__main__":
@@ -121,7 +160,24 @@ if __name__ == "__main__":
     parser.add_argument("--input-dir", required=True, help="Directory containing the document files")
     parser.add_argument("--output-dir", required=True, help="Directory to save the manifest files")
     parser.add_argument("--files-per-manifest", type=int, default=10, help="Number of files per manifest")
+    parser.add_argument(
+        "--multi-target",
+        action="store_true",
+        help="Enable multi-target mode: assign multiple emails per document"
+    )
+    parser.add_argument(
+        "--max-targets",
+        type=int,
+        default=3,
+        help="Maximum number of target emails per document; actual count is random between 1 and this value (only used with --multi-target, default: 3)"
+    )
 
     args = parser.parse_args()
 
-    generate_manifests(args.input_dir, args.output_dir, args.files_per_manifest)
+    generate_manifests(
+        args.input_dir,
+        args.output_dir,
+        args.files_per_manifest,
+        multi_target=args.multi_target,
+        max_targets=args.max_targets
+    )

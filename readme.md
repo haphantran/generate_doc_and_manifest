@@ -43,6 +43,8 @@ python3 generate_manifests.py --input-dir <directory> --output-dir <directory> [
 *   `--input-dir`: (Required) Directory containing the source document files.
 *   `--output-dir`: (Required) Directory to save the generated manifest files.
 *   `--files-per-manifest`: Number of files to list in each manifest file (default: 10).
+*   `--multi-target`: Enable multi-target mode to assign multiple emails per document.
+*   `--max-targets`: Maximum number of target emails per document; actual count is random between 1 and this value (default: 3, only used with `--multi-target`).
 
 **Configuration:**
 
@@ -54,10 +56,24 @@ You can modify the following lists at the top of `generate_manifests.py` to cust
 *   `DOC_CATEGORIES_LIST`
 *   `START_DATE` and `END_DATE` (for random `DOC_POSTED_ON` date generation)
 
-**Example:**
+**Examples:**
+
+Single target mode (default):
 
 ```bash
 python3 generate_manifests.py --input-dir docs --output-dir manifests --files-per-manifest 50
+```
+
+Multi-target mode (outputs to `manifests/multi_target/` with filenames `manifest_multi_target_*.manifest`):
+
+```bash
+python3 generate_manifests.py --input-dir docs --output-dir manifests --files-per-manifest 50 --multi-target
+```
+
+Multi-target mode with custom max targets (each document gets 1-5 random emails):
+
+```bash
+python3 generate_manifests.py --input-dir docs --output-dir manifests --files-per-manifest 50 --multi-target --max-targets 5
 ```
 
 ## Workflow Example
