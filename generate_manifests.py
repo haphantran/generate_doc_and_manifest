@@ -6,12 +6,15 @@ import argparse
 
 # --- Configuration ---
 TARGET_EMAILS_LIST = [
-    "angelo@portfolioxpressway.com",
+    "tori+jan28@thexchangecompany.com",
+    "tori+jan28e@thexchangecompany.com",
+    "tori+jan29@thexchangecompany.com",
+    "tori+jan29a@thexchangecompany.com",
     "haphan+client@portfolioxpressway.com",
-    "tori+jan19englishdefault@thexchangecompany.com",
-    "tori+jan19a@thexchangecompany.com",
-    "tori+jan19@thexchangecompany.com",
-    "tori+jan2b@thexchangecompany.com",
+    "anoop.pxw+26@gmail.com",
+    "anoop.pxw+26french@gmail.com",
+    "tori+sep16@thexchangecompany.com",
+    "tori+sep22@thexchangecompany.com",
 ]
 
 DOC_TYPES_LIST = [
@@ -21,11 +24,18 @@ DOC_TYPES_LIST = [
     "R18",
     "NR4",
     "Subscription Agreement",
-    "Report",
+    "Report",cos
     "Other Document",
 ]
 
-TARGET_DIRS_LIST = ["/Tax 2025"]
+TARGET_DIRS_LIST = [
+    "/Tax 2025",
+    "/Tax 2025/something",
+    "/Tax 2025/another",
+    "/",
+    "/Tax 2025/another/deeper/more",
+    "/Tax 2025/something/anotherthing/anotherlevel/keepgoing/we are not done yet/another one",
+]
 
 DOC_CATEGORIES_LIST = [
     "LYZ Individual Tax Slip",
@@ -73,7 +83,14 @@ def get_random_working_day(working_days):
     return random.choice(working_days).strftime("%Y-%m-%d")
 
 
-def generate_manifests(input_dir, output_dir, files_per_manifest, multi_target=False, max_targets=None):
+def generate_manifests(
+    input_dir,
+    output_dir,
+    files_per_manifest,
+    multi_target=False,
+    max_targets=None,
+    max_files=None,
+):
     """
     Generate manifest files for documents.
 
@@ -83,14 +100,17 @@ def generate_manifests(input_dir, output_dir, files_per_manifest, multi_target=F
         files_per_manifest: Number of files per manifest
         multi_target: If True, assign multiple random emails to each document
         max_targets: Maximum number of target emails per document (only used if multi_target=True)
+        max_files: Maximum total number of files to process (None means all files)
     """
     # Determine actual output directory and naming based on mode
+    # Include max_files in prefix if specified (for distinguishing batches)
+    files_suffix = f"_{max_files}files" if max_files else ""
     if multi_target:
         actual_output_dir = os.path.join(output_dir, "multi_target")
-        manifest_prefix = "manifest_multi_target"
+        manifest_prefix = f"manifest_multi_target{files_suffix}"
     else:
         actual_output_dir = output_dir
-        manifest_prefix = "manifest"
+        manifest_prefix = f"manifest{files_suffix}"
 
     if not os.path.exists(actual_output_dir):
         os.makedirs(actual_output_dir)
@@ -104,6 +124,11 @@ def generate_manifests(input_dir, output_dir, files_per_manifest, multi_target=F
     if not all_files:
         print(f"No files found in {input_dir}")
         return
+
+    # Limit to max_files if specified
+    if max_files is not None and max_files > 0:
+        all_files = all_files[:max_files]
+        print(f"Processing {len(all_files)} files (limited by --max-files)")
 
     working_days = get_working_days(START_DATE, END_DATE)
 
@@ -171,6 +196,12 @@ if __name__ == "__main__":
         default=3,
         help="Maximum number of target emails per document; actual count is random between 1 and this value (only used with --multi-target, default: 3)"
     )
+    parser.add_argument(
+        "--max-files",
+        type=int,
+        default=None,
+        help="Maximum total number of files to process (default: all files)",
+    )
 
     args = parser.parse_args()
 
@@ -179,5 +210,6 @@ if __name__ == "__main__":
         args.output_dir,
         args.files_per_manifest,
         multi_target=args.multi_target,
-        max_targets=args.max_targets
+        max_targets=args.max_targets,
+        max_files=args.max_files,
     )
